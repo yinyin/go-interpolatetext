@@ -41,15 +41,15 @@ func (err *ErrInterpolateArgumentParseFailed) Error() string {
 var ErrBraceNotClose = errors.New("brace in template is not close")
 
 type interpolateApplyCallable interface {
-	apply(data interface{}) string
+	apply(data interface{}) (result string, err error)
 }
 
 type interpolateArgumentParser func(string) (interpolateApplyCallable, error)
 
 type literalInterpolateApply string
 
-func (literal *literalInterpolateApply) apply(interface{}) string {
-	return (string)(*literal)
+func (literal *literalInterpolateApply) apply(interface{}) (result string, err error) {
+	return (string)(*literal), nil
 }
 
 type templateParseEngine struct {
