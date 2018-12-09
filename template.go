@@ -200,8 +200,11 @@ func (tpl *templateBase) applyContent(data interface{}, skipError bool) (result 
 	var b strings.Builder
 	for _, callable := range tpl.interpolateParts {
 		v, err := callable.apply(data)
-		if (nil != err) && (!skipError) {
-			return v, err
+		if nil != err {
+			if !skipError {
+				return v, err
+			}
+			v = "${" + v + "}"
 		}
 		b.WriteString(v)
 	}
