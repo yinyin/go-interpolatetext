@@ -88,14 +88,6 @@ func (engine *templateParseEngine) getExtendedLiteralString(templateText string)
 	return l
 }
 
-func (engine *templateParseEngine) appendLiteral(idx int, templateText string) {
-	if engine.partStart != engine.partFinish {
-		literal := (literalInterpolateApply)(templateText[engine.partStart:engine.partFinish])
-		engine.interpolateParts = append(engine.interpolateParts, &literal)
-	}
-	engine.restartPartTracking(idx)
-}
-
 func (engine *templateParseEngine) extendLiteral(templateText string) {
 	if engine.partStart == engine.partFinish {
 		return
