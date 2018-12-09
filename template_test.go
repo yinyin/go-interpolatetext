@@ -91,3 +91,34 @@ func TestTemplateParseEngineCaseN2(t *testing.T) {
 		newCaseN(true, "123"),
 	})
 }
+
+func TestTemplateParseEngineCaseN3(t *testing.T) {
+	runTestOfCaseN(t, "${dEf}123", []*caseN{
+		newCaseN(false, "dEf"),
+		newCaseN(true, "123"),
+	})
+}
+
+func TestTemplateParseEngineCaseN4(t *testing.T) {
+	runTestOfCaseN(t, "${dEf}123${Ghi}GK", []*caseN{
+		newCaseN(false, "dEf"),
+		newCaseN(true, "123"),
+		newCaseN(false, "Ghi"),
+		newCaseN(true, "GK"),
+	})
+}
+
+func TestTemplateParseEngineCaseN5(t *testing.T) {
+	runTestOfCaseN(t, "${dEf}123${Ghi}GK\\$ABC\\${defghi}", []*caseN{
+		newCaseN(false, "dEf"),
+		newCaseN(true, "123"),
+		newCaseN(false, "Ghi"),
+		newCaseN(true, "GK$ABC${defghi}"),
+	})
+}
+
+func TestTemplateParseEngineCaseN6(t *testing.T) {
+	runTestOfCaseN(t, "{dEf}123{Ghi}GK\\$ABC", []*caseN{
+		newCaseN(true, "{dEf}123{Ghi}GK$ABC"),
+	})
+}
