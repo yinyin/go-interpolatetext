@@ -2,6 +2,7 @@ package interpolatetext
 
 import "testing"
 import "reflect"
+import "errors"
 
 type mockInterpolateApplyCallableN struct {
 	arg string
@@ -121,4 +122,66 @@ func TestTemplateParseEngineCaseN6(t *testing.T) {
 	runTestOfCaseN(t, "{dEf}123{Ghi}GK\\$ABC", []*caseN{
 		newCaseN(true, "{dEf}123{Ghi}GK$ABC"),
 	})
+}
+
+func TestTemplateParseEngineCaseN7(t *testing.T) {
+	runTestOfCaseN(t, "${dEf}${Ghi}GKrrr", []*caseN{
+		newCaseN(false, "dEf"),
+		newCaseN(false, "Ghi"),
+		newCaseN(true, "GKrrr"),
+	})
+}
+
+type mockInterpolateApplyCallableP struct {
+	arg string
+}
+
+func (m *mockInterpolateApplyCallableP) apply(data interface{}) (result string, err error) {
+	if nil == data {
+		return "[" + m.arg + "]", nil
+	}
+	if err, ok := data.(error); ok {
+		return m.arg, err
+	}
+	if textMap, ok := data.(map[string]string); ok {
+		return "(" + textMap[m.arg] + ")", nil
+	}
+	return "/" + m.arg + "/", nil
+}
+
+func mockInterpolateArgParserP(arg string) (callable interpolateApplyCallable, err error) {
+	callable = &mockInterpolateApplyCallableP{
+		arg: arg,
+	}
+	return callable, nil
+}
+
+func checkMockInterpolateApplyCallablePNoError(t *testing.T, templateText string, data interface{}, expectText string) {
+	var tpl templateBase
+	if err := tpl.parseTemplate(templateText, mockInterpolateArgParserP); nil != err {
+		t.Fatalf("failed on parsing template [%s]: %v", templateText, err)
+	}
+	result, err := tpl.applyContent(data, false)
+	if result != expectText {
+		t.Errorf("result content not expect [%s] != [%s]", result, expectText)
+	}
+	if nil != err {
+		t.Errorf("not expecting error but having error: %v", err)
+	}
+}
+
+func TestTemplateBaseCaseP0(t *testing.T) {
+	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", nil, "Abc[DEF]Ghi")
+	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", errors.New("test error"), "Abc${DEF}Ghi")
+	var tmap = map[string]string{
+		"DEF": "apple",
+		"ABC": "banana",
+	}
+	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", tmap, "Abc(apple)Ghi")
+	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi\\$${ABC}", tmap, "Abc(apple)Ghi$(banana)")
+	var emap = map[string]string{
+		"ABC": "banana",
+	}
+	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", emap, "Abc()Ghi")
+	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", "else-case", "Abc/DEF/Ghi")
 }
