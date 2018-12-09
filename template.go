@@ -196,12 +196,12 @@ func (tpl *templateBase) parseTemplate(templateText string, argumentParser inter
 	return nil
 }
 
-func (tpl *templateBase) applyContent(data interface{}, skipError bool) (result string, err error) {
+func (tpl *templateBase) applyContent(data interface{}, raiseError bool) (result string, err error) {
 	var b strings.Builder
 	for _, callable := range tpl.interpolateParts {
 		v, err := callable.apply(data)
 		if nil != err {
-			if !skipError {
+			if raiseError {
 				return v, err
 			}
 			v = "${" + v + "}"
