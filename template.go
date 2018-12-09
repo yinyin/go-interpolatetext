@@ -1,6 +1,7 @@
 package interpolatetext
 
 import "fmt"
+import "errors"
 
 // ErrEmptyInterpolateArgument represents error discovered on parsing template
 // string where an empty interpolate (eg `${}`) is given.
@@ -35,6 +36,8 @@ func newErrInterpolateArgumentParseFailed(position int, parserError error) (err 
 func (err *ErrInterpolateArgumentParseFailed) Error() string {
 	return fmt.Sprintf("interpolate argument parsing failed (position=%d, error=%v)", err.Position, err.ParserError)
 }
+
+var ErrBraceNotClose error = errors.New("brace in template is not close")
 
 type interpolateApplyCallable interface {
 	apply(data interface{}) string
@@ -169,12 +172,14 @@ func (engine *templateParseEngine) parse(templateText string) (err error) {
 			engine.state = parseStateInit
 		}
 	}
+	if engine.state == parseStateBraceStarted {
+		return ErrBraceNotClose
+	}
 	if l := len(templateText); engine.partStart < l {
 		engine.partFinish = l
 		engine.extendLiteral(templateText)
 	}
 	return nil
-
 }
 
 type templateBase struct {
