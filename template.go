@@ -138,11 +138,11 @@ func (engine *templateParseEngine) onStateBraceStarted(idx int, ch rune, templat
 		return newErrEmptyInterpolateArgument(idx)
 	}
 	argText := templateText[engine.partStart:engine.partFinish]
-	if argObj, err := engine.argumentParser(argText); nil != err {
+	var argObj interpolateApplyCallable
+	if argObj, err = engine.argumentParser(argText); nil != err {
 		return newErrInterpolateArgumentParseFailed(idx, err)
-	} else {
-		engine.interpolateParts = append(engine.interpolateParts, argObj)
 	}
+	engine.interpolateParts = append(engine.interpolateParts, argObj)
 	engine.restartPartTracking(idx)
 	engine.state = parseStateInit
 	return nil
