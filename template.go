@@ -37,7 +37,8 @@ func (err *ErrInterpolateArgumentParseFailed) Error() string {
 	return fmt.Sprintf("interpolate argument parsing failed (position=%d, error=%v)", err.Position, err.ParserError)
 }
 
-var ErrBraceNotClose error = errors.New("brace in template is not close")
+// ErrBraceNotClose represents an opened interpolate brace is not closed as expect.
+var ErrBraceNotClose = errors.New("brace in template is not close")
 
 type interpolateApplyCallable interface {
 	apply(data interface{}) string
