@@ -2,6 +2,7 @@ package interpolatetext
 
 import "fmt"
 import "errors"
+import "strings"
 
 // ErrEmptyInterpolateArgument represents error discovered on parsing template
 // string where an empty interpolate (eg `${}`) is given.
@@ -193,4 +194,16 @@ func (tpl *templateBase) parseTemplate(templateText string, argumentParser inter
 	}
 	tpl.interpolateParts = tplEngine.interpolateParts
 	return nil
+}
+
+func (tpl *templateBase) applyContent(data interface{}, skipError bool) (result string, err error) {
+	var b strings.Builder
+	for _, callable := range tpl.interpolateParts {
+		v, err := callable.apply(data)
+		if (nil != err) && (!skipError) {
+			return v, err
+		}
+		b.WriteString(v)
+	}
+	return b.String(), nil
 }
