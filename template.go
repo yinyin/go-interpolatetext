@@ -57,7 +57,7 @@ func (literal *literalInterpolateApply) apply(interface{}) (result string, err e
 
 type templateParseEngine struct {
 	interpolateParts []interpolateApplyCallable
-	state            int
+	state            parseStates
 	partStart        int
 	partFinish       int
 	argumentParser   interpolateArgumentParser
@@ -182,8 +182,10 @@ type templateBase struct {
 	interpolateParts []interpolateApplyCallable
 }
 
+type parseStates int
+
 const (
-	parseStateInit = iota
+	parseStateInit parseStates = iota
 	parseStateDollarSign
 	parseStateBraceStarted
 	parseStateBackSlash
