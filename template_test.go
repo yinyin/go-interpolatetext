@@ -1,8 +1,10 @@
 package interpolatetext
 
-import "testing"
-import "reflect"
-import "errors"
+import (
+	"errors"
+	"reflect"
+	"testing"
+)
 
 type mockInterpolateApplyCallableN struct {
 	arg string

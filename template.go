@@ -1,8 +1,10 @@
 package interpolatetext
 
-import "fmt"
-import "errors"
-import "strings"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // ErrEmptyInterpolateArgument represents error discovered on parsing template
 // string where an empty interpolate (eg `${}`) is given.

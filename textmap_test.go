@@ -1,6 +1,8 @@
 package interpolatetext
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTextMapInterpolationD1(t *testing.T) {
 	inst, err := NewTextMapInterpolation("Abc${dEf}Ghi${JK}L")
