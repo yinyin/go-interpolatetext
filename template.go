@@ -129,7 +129,7 @@ func (engine *templateParseEngine) onStateDollarSign(idx int, ch rune, templateT
 }
 
 func (engine *templateParseEngine) onStateBraceStarted(idx int, ch rune, templateText string) (err error) {
-	if '}' != ch {
+	if ch != '}' {
 		return nil
 	}
 	engine.partFinish = idx
@@ -147,11 +147,13 @@ func (engine *templateParseEngine) onStateBraceStarted(idx int, ch rune, templat
 	return nil
 }
 
+/*
 func (engine *templateParseEngine) onStateBackSlash(idx int, templateText string) {
 	engine.partFinish = idx
 	engine.extendLiteral(templateText)
 	engine.restartPartTracking(idx)
 }
+*/
 
 func (engine *templateParseEngine) parse(templateText string) (err error) {
 	for idx, ch := range templateText {
@@ -213,4 +215,73 @@ func (tpl *templateBase) applyContent(data interface{}, raiseError bool) (result
 		b.WriteString(v)
 	}
 	return b.String(), nil
+}
+
+func applyContent(templateText string, data interface{}, argumentParser interpolateArgumentParser, raiseError bool) (result string, err error) {
+	var b strings.Builder
+	state := parseStateInit
+	partStart := 0
+	for idx, ch := range templateText {
+		switch state {
+		case parseStateInit:
+			switch ch {
+			case '$':
+				state = parseStateDollarSign
+			case '\\':
+				if (idx - partStart) > 0 {
+					s := templateText[partStart:idx]
+					b.WriteString(s)
+				}
+				state = parseStateBackSlash
+				partStart = idx + 1
+			}
+		case parseStateDollarSign:
+			if ch == '{' {
+				if partFinish := idx - 1; (partFinish - partStart) > 0 {
+					s := templateText[partStart:partFinish]
+					b.WriteString(s)
+				}
+				partStart = idx + 1
+				state = parseStateBraceStarted
+			} else {
+				state = parseStateInit
+			}
+		case parseStateBraceStarted:
+			if ch == '}' {
+				argText := templateText[partStart:idx]
+				var argObj interpolateApplyCallable
+				if argObj, err = argumentParser(argText); nil != err {
+					if raiseError {
+						return
+					}
+					err = nil
+					b.WriteString("${" + argText + "}")
+				} else {
+					var v string
+					if v, err = argObj.apply(data); nil != err {
+						if raiseError {
+							return v, err
+						}
+						err = nil
+						v = "${" + argText + "}"
+					}
+					b.WriteString(v)
+				}
+				partStart = idx + 1
+				state = parseStateInit
+			}
+		case parseStateBackSlash:
+			state = parseStateInit
+		}
+	}
+	if state == parseStateBraceStarted {
+		err = ErrBraceNotClose
+		return
+	}
+	if l := len(templateText); (l - partStart) > 1 {
+		s := templateText[partStart:l]
+		b.WriteString(s)
+	}
+	result = b.String()
+	return
 }

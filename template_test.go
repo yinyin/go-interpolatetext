@@ -158,7 +158,7 @@ func mockInterpolateArgParserP(arg string) (callable interpolateApplyCallable, e
 	return callable, nil
 }
 
-func checkMockInterpolateApplyCallablePNoError(t *testing.T, templateText string, data interface{}, expectText string) {
+func checkMockInterpolateApplyCallablePNoErrorTemplate(t *testing.T, templateText string, data interface{}, expectText string) {
 	var tpl templateBase
 	if err := tpl.parseTemplate(templateText, mockInterpolateArgParserP); nil != err {
 		t.Fatalf("failed on parsing template [%s]: %v", templateText, err)
@@ -173,17 +173,43 @@ func checkMockInterpolateApplyCallablePNoError(t *testing.T, templateText string
 }
 
 func TestTemplateBaseCaseP0(t *testing.T) {
-	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", nil, "Abc[DEF]Ghi")
-	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", errors.New("test error"), "Abc${DEF}Ghi")
+	checkMockInterpolateApplyCallablePNoErrorTemplate(t, "Abc${DEF}Ghi", nil, "Abc[DEF]Ghi")
+	checkMockInterpolateApplyCallablePNoErrorTemplate(t, "Abc${DEF}Ghi", errors.New("test error"), "Abc${DEF}Ghi")
 	var tmap = map[string]string{
 		"DEF": "apple",
 		"ABC": "banana",
 	}
-	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", tmap, "Abc(apple)Ghi")
-	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi\\$${ABC}", tmap, "Abc(apple)Ghi$(banana)")
+	checkMockInterpolateApplyCallablePNoErrorTemplate(t, "Abc${DEF}Ghi", tmap, "Abc(apple)Ghi")
+	checkMockInterpolateApplyCallablePNoErrorTemplate(t, "Abc${DEF}Ghi\\$${ABC}", tmap, "Abc(apple)Ghi$(banana)")
 	var emap = map[string]string{
 		"ABC": "banana",
 	}
-	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", emap, "Abc()Ghi")
-	checkMockInterpolateApplyCallablePNoError(t, "Abc${DEF}Ghi", "else-case", "Abc/DEF/Ghi")
+	checkMockInterpolateApplyCallablePNoErrorTemplate(t, "Abc${DEF}Ghi", emap, "Abc()Ghi")
+	checkMockInterpolateApplyCallablePNoErrorTemplate(t, "Abc${DEF}Ghi", "else-case", "Abc/DEF/Ghi")
+}
+
+func checkMockInterpolateApplyCallablePNoErrorApplyContent(t *testing.T, templateText string, data interface{}, expectText string) {
+	result, err := applyContent(templateText, data, mockInterpolateArgParserP, false)
+	if result != expectText {
+		t.Errorf("result content not expect [%s] != [%s]", result, expectText)
+	}
+	if nil != err {
+		t.Errorf("not expecting error but having error: %v", err)
+	}
+}
+
+func TestApplyContentCaseP0(t *testing.T) {
+	checkMockInterpolateApplyCallablePNoErrorApplyContent(t, "Abc${DEF}Ghi", nil, "Abc[DEF]Ghi")
+	checkMockInterpolateApplyCallablePNoErrorApplyContent(t, "Abc${DEF}Ghi", errors.New("test error"), "Abc${DEF}Ghi")
+	var tmap = map[string]string{
+		"DEF": "apple",
+		"ABC": "banana",
+	}
+	checkMockInterpolateApplyCallablePNoErrorApplyContent(t, "Abc${DEF}Ghi", tmap, "Abc(apple)Ghi")
+	checkMockInterpolateApplyCallablePNoErrorApplyContent(t, "Abc${DEF}Ghi\\$${ABC}", tmap, "Abc(apple)Ghi$(banana)")
+	var emap = map[string]string{
+		"ABC": "banana",
+	}
+	checkMockInterpolateApplyCallablePNoErrorApplyContent(t, "Abc${DEF}Ghi", emap, "Abc()Ghi")
+	checkMockInterpolateApplyCallablePNoErrorApplyContent(t, "Abc${DEF}Ghi", "else-case", "Abc/DEF/Ghi")
 }
