@@ -23,6 +23,21 @@ func TestTextMapInterpolationD1(t *testing.T) {
 	}
 }
 
+func TestTextMapApplyD1(t *testing.T) {
+	var tmap = map[string]string{
+		"DEF": "-www-",
+		"JK":  "[JP-Skrt]",
+	}
+	result, err := ApplyTextMap("Abc${dEf}Ghi${JK}L", tmap, true)
+	if nil != err {
+		t.Fatalf("failed on apply text-map: %v", err)
+	}
+	expText := "Abc-www-Ghi[JP-Skrt]L"
+	if result != expText {
+		t.Fatalf("unexpect result [%v] vs. [%v]", result, expText)
+	}
+}
+
 func TestTextMapInterpolationSliceD1(t *testing.T) {
 	var tplText = []string{
 		"Abc${dEf}Ghi${JK}L",

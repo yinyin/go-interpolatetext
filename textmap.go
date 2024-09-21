@@ -88,3 +88,8 @@ func (tpl TextMapInterpolationSlice) Apply(textMap map[string]string, raiseError
 	}
 	return result, nil
 }
+
+// ApplyTextMap interpolates given text map with given template.
+func ApplyTextMap(templateText string, textMap map[string]string, raiseError bool) (result string, err error) {
+	return applyContent(templateText, textMap, textMapInterploateArgumentParser, raiseError)
+}
