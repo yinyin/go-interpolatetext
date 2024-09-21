@@ -278,7 +278,7 @@ func applyContent(templateText string, data interface{}, argumentParser interpol
 		err = ErrBraceNotClose
 		return
 	}
-	if l := len(templateText); (l - partStart) > 1 {
+	if l := len(templateText); (l - partStart) > 0 {
 		s := templateText[partStart:l]
 		b.WriteString(s)
 	}
